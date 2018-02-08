@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+from electrum import bitcoin
+from collections import OrderedDict
+import sys
+
+def print_dict_menu( dic ):
+	for key in dic:
+			print ( key + ". " + dic[key]['title'] )
+	print( str( len(dic) + 1 ) + ". Back to main menu" )
+	print()
+		
+choice = ""
+while choice != "4":
+	print( "Please choose an operation:\n")
+	print( "1. Convert private key" )
+	print( "2. Convert extended private key" )
+	print( "3. Convert extended public key")
+	print( "4. Quit program\n")
+	
+	choice = input( "What is your choice? Choose by entering a number between 1 and 4 " )
+	if choice == "1":
+		privkey = input( "Enter your private key in Wallet Import Format: ")
+		try:
+			orig_format,secret,compressed=bitcoin.deserialize_privkey( privkey )
+		except BaseException:
+			print( "Invalid private key.\n" )
+			continue
+		pkey_types = OrderedDict()  
+		pkey_types["1"] = { "title" : "p2pkh", "value" : "p2pkh" }
+		pkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
+		pkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
+		print()
+		print( "Please choose a target private key type:\n" )
+		print_dict_menu( pkey_types )
+		length = str( len( pkey_types ) + 1 )
+		target_format = ""
+		while target_format != length:
+			target_format = input( "Please enter your choice (1-%s) : " % ( length ) )
+			if target_format in pkey_types:
+				print( "Your private key in " + pkey_types[ target_format][ 'title' ] + " format is " + bitcoin.serialize_privkey( secret, compressed, pkey_types[ target_format ][ "value" ] ) + "\n" )
+			elif target_format == length:
+				break
+			else:
+				print( "Invalid Selection. Try again\n" )
+				continue
+	elif choice == "2":
+		xpriv = input( "Enter your extended private key (xpriv): " )
+		try:
+			xtype, depth, fingerprint, child_number, c, K_or_k = bitcoin.deserialize_xprv( xpriv )
+		except BaseException:
+			print( "Invalid extended private key\n" )
+			continue
+		print( "Please choose a target private key type:\n" )
+		xpkey_types = OrderedDict()
+		xpkey_types[ "1" ] = { "title" : "Standard - xprv", "value" : "standard" }
+		xpkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
+		xpkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
+		print_dict_menu( xpkey_types )
+		target_format = input( "Please choose the target extended private key type (1-3) : ")
+		if target_format in xpkey_types:
+			print( "Your private key in " + xpkey_types[ target_format][ 'title' ] + " format is " + bitcoin.serialize_xprv( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) + "\n" )
+		else:
+			print( "Invalid Selection. Try again\n" )
+			continue
