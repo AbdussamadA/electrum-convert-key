@@ -26,6 +26,15 @@ def get_target_key_type( dic ):
 	return ret
 		
 choice = ""
+xpkey_types = OrderedDict()
+xpkey_types[ "1" ] = { "title" : "Standard - xprv", "value" : "standard" }
+xpkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
+xpkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
+xpkey_types["4"] = { "title" : "p2wsh-p2sh - segwit multisig", "value" : "p2wsh-p2sh" }
+pkey_types = xpkey_types
+pkey_types["1"] = { "title" : "p2pkh", "value" : "p2pkh" }
+del pkey_types['4'] #doesn't work without redeem script
+
 while choice != "4":
 	print( "Please choose an operation:\n")
 	print( "1. Convert private key" )
@@ -40,10 +49,6 @@ while choice != "4":
 		except BaseException:
 			print( "Invalid private key.\n" )
 			continue
-		pkey_types = OrderedDict()  
-		pkey_types["1"] = { "title" : "p2pkh", "value" : "p2pkh" }
-		pkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
-		pkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
 		target_type = get_target_key_type( pkey_types )
 		if target_type:
 			print( "Your private key in %s format is %s\n" % ( pkey_types[ target_type][ 'title' ], bitcoin.serialize_privkey( secret, compressed, pkey_types[ target_type ][ "value" ] ) ) )
@@ -56,10 +61,6 @@ while choice != "4":
 		except BaseException:
 			print( "Invalid extended private key\n" )
 			continue
-		xpkey_types = OrderedDict()
-		xpkey_types[ "1" ] = { "title" : "Standard - xprv", "value" : "standard" }
-		xpkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
-		xpkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
 		target_format = get_target_key_type( xpkey_types )
 		if target_format:
 			print( "Your private key in %s format is %s\n" % ( xpkey_types[ target_format][ 'title' ], bitcoin.serialize_xprv( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
@@ -72,10 +73,6 @@ while choice != "4":
 		except BaseException:
 			print( "Invalid extended public key\n" )
 			continue
-		xpkey_types = OrderedDict()
-		xpkey_types[ "1" ] = { "title" : "Standard - xpub", "value" : "standard" }
-		xpkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
-		xpkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
 		target_format = get_target_key_type( xpkey_types )
 		if target_format:
 			print( "Your public key in %s format is %s\n" % ( xpkey_types[ target_format][ 'title' ], bitcoin.serialize_xpub( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
