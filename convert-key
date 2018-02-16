@@ -1,0 +1,96 @@
+#!/usr/bin/python3
+import sys, copy
+from electrum import bitcoin
+from collections import OrderedDict
+
+def get_target_key_type( dic ):
+    print()
+    print( "Please choose a target key type:\n" )
+    for key in dic:
+            print ( "{0}. {1}".format(key, dic[key]['title'] ) )
+    print( str( len(dic) + 1 ) + ". Back to main menu" )
+    print()
+    length = str( len( dic ) + 1 )
+    target_format = ""
+    ret = False
+    while target_format != length:
+        target_format = input( "Please enter your choice (1-{0}): ".format( length ) )
+        if target_format in dic:
+            ret = target_format
+            break
+        elif target_format == length:
+            break
+        else:
+            print( "Invalid Selection. Try again\n" )
+            continue
+    return ret
+        
+choice = ""
+xpkey_types = OrderedDict()
+xpkey_types[ "1" ] = { "title" : "p2pkh - standard", "value" : "standard" }
+xpkey_types["2"] = { "title" : "p2wpkh - native segwit", "value" : "p2wpkh" }
+xpkey_types["3"] = { "title" : "p2wpkh-p2sh - p2sh segwit", "value" : "p2wpkh-p2sh" }
+xpkey_types["4"] = { "title" : "p2wsh-p2sh - segwit multisig", "value" : "p2wsh-p2sh" }
+pkey_types = copy.deepcopy( xpkey_types )
+pkey_types["1"]['value'] = "p2pkh" 
+del pkey_types['4'] #doesn't work without redeem script
+
+while choice != "4":
+    print( "Please choose an operation:\n")
+    print( "1. Convert private key" )
+    print( "2. Convert extended private key" )
+    print( "3. Convert extended public key")
+    print( "4. Quit program\n")
+    choice = input( "What is your choice? Choose by entering a number between 1 and 4 " )
+    if choice == "1":
+        privkey = input( "Enter your private key in Wallet Import Format: ")
+        try:
+            orig_format,secret,compressed=bitcoin.deserialize_privkey( privkey )
+        except BaseException:
+            print( "Invalid private key.\n" )
+            continue
+        if compressed:
+            cmpr = "is compressed"
+        else:
+            cmpr = "is not compressed"
+        print( "The private key you have provided is of type {0} and {1}".format( orig_format, cmpr ) ) 
+        target_type = get_target_key_type( pkey_types )
+        if target_type:
+            compressed = input( "Do you want the target private key to be the compressed version? (Y/n): ")
+            if compressed != "n":
+                print( "\nYour compressed private key in {0} format is {1}\n".format( pkey_types[ target_type][ 'title' ], bitcoin.serialize_privkey( secret, True, pkey_types[ target_type ][ "value" ] ) ) )
+            else:
+                print( "\nYour uncompressed private key in {0} format is {1}\n".format( pkey_types[ target_type][ 'title' ], bitcoin.serialize_privkey( secret, False, pkey_types[ target_type ][ "value" ] ) ) )
+        else:
+            continue
+    elif choice == "2":
+        xpriv = input( "Enter your extended private key: " )
+        try:
+            xtype, depth, fingerprint, child_number, c, K_or_k = bitcoin.deserialize_xprv( xpriv )
+        except BaseException:
+            print( "Invalid extended private key\n" )
+            continue
+        print( "The extended private key you have provided is of type {0}".format( xtype ) )
+        target_format = get_target_key_type( xpkey_types )
+        if target_format:
+            print( "\nYour private key in {0} format is {1}\n".format( xpkey_types[ target_format][ 'title' ], bitcoin.serialize_xprv( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
+        else:
+            continue
+    elif choice == "3":
+        xpub = input( "Enter your extended public key: " )
+        try:
+            xtype, depth, fingerprint, child_number, c, K_or_k = bitcoin.deserialize_xpub( xpub )
+        except BaseException:
+            print( "Invalid extended public key\n" )
+            continue
+        print( "The extended public key you have provided is of type {0}".format( xtype ) )
+        target_format = get_target_key_type( xpkey_types )
+        if target_format:
+            print( "\nYour public key in {0} format is {1}\n".format( xpkey_types[ target_format][ 'title' ], bitcoin.serialize_xpub( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
+        else:
+            continue
+    elif choice == "4":
+        print( "Quitting..." )
+        quit()
+    else:
+        print( "Invalid choice. Please enter a number between 1 and 4" )
