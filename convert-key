@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys, copy
-from electrum import bitcoin
+from electrum import bip32, bitcoin
 from collections import OrderedDict
 
 def get_target_key_type( dic ):
@@ -66,27 +66,27 @@ while choice != "4":
     elif choice == "2":
         xpriv = input( "Enter your extended private key: " )
         try:
-            xtype, depth, fingerprint, child_number, c, K_or_k = bitcoin.deserialize_xprv( xpriv )
+            xtype, depth, fingerprint, child_number, c, K_or_k = bip32.deserialize_xprv( xpriv )
         except BaseException:
             print( "Invalid extended private key\n" )
             continue
         print( "The extended private key you have provided is of type {0}".format( xtype ) )
         target_format = get_target_key_type( xpkey_types )
         if target_format:
-            print( "\nYour private key in {0} format is {1}\n".format( xpkey_types[ target_format][ 'title' ], bitcoin.serialize_xprv( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
+            print( "\nYour extended private key in {0} format is {1}\n".format( xpkey_types[ target_format][ 'title' ], bip32.serialize_xprv( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
         else:
             continue
     elif choice == "3":
         xpub = input( "Enter your extended public key: " )
         try:
-            xtype, depth, fingerprint, child_number, c, K_or_k = bitcoin.deserialize_xpub( xpub )
+            xtype, depth, fingerprint, child_number, c, K_or_k = bip32.deserialize_xpub( xpub )
         except BaseException:
             print( "Invalid extended public key\n" )
             continue
         print( "The extended public key you have provided is of type {0}".format( xtype ) )
         target_format = get_target_key_type( xpkey_types )
         if target_format:
-            print( "\nYour public key in {0} format is {1}\n".format( xpkey_types[ target_format][ 'title' ], bitcoin.serialize_xpub( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
+            print( "\nYour extended public key in {0} format is {1}\n".format( xpkey_types[ target_format][ 'title' ], bip32.serialize_xpub( xpkey_types[ target_format ][ "value" ], c, K_or_k, depth, fingerprint, child_number ) ) )
         else:
             continue
     elif choice == "4":
